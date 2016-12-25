@@ -1,36 +1,29 @@
 FROM debian:jessie
-MAINTAINER Robert Newson <rnewson@apache.org>
+MAINTAINER Ryuichi Tokugami <magcot.com@gmail.com>
 ENV DEBIAN_FRONTEND noninteractive
 
-# Configure backports
-RUN apt-get -qq update
-
-# Install prereqs
-RUN apt-get --no-install-recommends -y install \
-    build-essential \
-    ca-certificates \
-    curl \
-    erlang-dev \
-    erlang-nox \
-    git \
-    libicu-dev \
-    libmozjs185-dev \
-    python
-
-# Build couchdb
-RUN useradd -m couchdb
 ADD . /home/couchdb
 WORKDIR /home/couchdb
 
-# We don't to be so strict for simple testing.
-RUN sed -i'' '/require_otp_vsn/d' rebar.config.script
 
-# Expose nodes on external network interface
-RUN sed -i'' 's/bind_address = 127.0.0.1/bind_address = 0.0.0.0/' rel/overlay/etc/default.ini
+# Configure backports
+# Install prereqs
+RUN apt-get update;  apt-get --no-install-recommends -y install \
+  build-essential pkg-config ca-certificates \
+  libcurl4-openssl-dev libssl-dev curl \
+  erlang  erlang-dev erlang-nox \
+  libmozjs185-dev python git \
+  libicu-dev icu-devtools gnupg; \
+  sed -i'' '/require_otp_vsn/d' rebar.config.script;  \
+  ./configure --disable-docs ; \
+  make -f Makefile.linux clean release ; \
+  sed -i'' 's/bind_address = 127.0.0.1/bind_address = 0.0.0.0/' rel/couchdb/etc/default.ini;  \
+  cp -r rel/couchdb /usr/local/lib; \
+  ln -s /usr/local/lib/couchdb/etc/ /usr/local/etc/couchdb; \
+  ln -s /usr/local/lib/couchdb/bin/* /usr/local/bin/; \
+  ln  -s /usr/local/lib/couchdb/data /srv/couchdb ; \
+   apt-get clean ; rm -rf /home/couchdb ;
 
-# Build
-RUN ./configure
-RUN make -f Makefile.linux couch
 
 EXPOSE 5984 5986
-ENTRYPOINT ["/home/couchdb/bin/couchdb"]
+ENTRYPOINT ["/usr/local/lib/couchdb/bin/couchdb"]

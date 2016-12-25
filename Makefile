@@ -1,5 +1,5 @@
-VERSION = 2.0.0
-ORGANIZATION=apacheiamges
+VERSION=2.0.0
+ORGANIZATION=apacheimages
 REPOSITORY=couchdb
 PORT=5984
 
@@ -15,7 +15,7 @@ push:
 	git push origin ${VERSION}
 	
 shell:
-	docker run --name ${REPOSITORY} -it --rm -p ${PORT}:${PORT} ${ORGANIZATION}/${REPOSITORY}:${VERSION} /bin/sh
+	docker run --name ${REPOSITORY} -it --rm -p ${PORT}:${PORT} ${ORGANIZATION}/${REPOSITORY}:${VERSION} /bin/bash
 
 run:
 	docker run --name ${REPOSITORY} --rm -p ${PORT}:${PORT} ${ORGANIZATION}/${REPOSITORY}:${VERSION} 
